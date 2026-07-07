@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Jersey Store SC</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,450;9..40,500;9..40,600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <script>
+    window.CONFIG = {
+      SHOP_NAME: 'Jersey Store SC',
+      WHATSAPP_NUMBER: '573100000000',
+    };
+  </script>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="login-page" id="login-view">
+    <div class="login-card">
+      <h1>Admin</h1>
+      <p>Inicia sesión para administrar el catálogo</p>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" placeholder="tu@email.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Contraseña</label>
+          <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <div class="form-error" id="login-error"></div>
+        <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div id="admin-view" class="hidden">
+
+    <div class="admin-header">
+      <div class="admin-header-left">
+        <span class="shop-name">Catálogo</span>
+        <span class="admin-badge">Admin</span>
+      </div>
+      <button class="btn btn-ghost" id="logout-btn">Cerrar sesión</button>
+    </div>
+
+    <div class="admin-actions-bar">
+      <button class="btn btn-primary" id="add-product-btn">+ Añadir producto</button>
+      <span style="font-size:13px;color:var(--ink-muted)" id="product-count"></span>
+    </div>
+
+    <main>
+      <div class="admin-grid" id="admin-grid">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ADD PRODUCT MODAL -->
+  <div class="modal-overlay" id="add-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Nuevo producto</h2>
+        <button class="modal-close" id="add-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="product-name">Nombre del producto</label>
+          <input type="text" id="product-name" placeholder="Ej: Real Madrid 26/27 Home Jersey">
+        </div>
+        <div class="form-group">
+          <label for="product-category">Categoría</label>
+          <input type="text" id="product-category" placeholder="Ej: La Liga, Premier League...">
+        </div>
+        <div class="form-group">
+          <label>Imágenes</label>
+          <div class="drop-zone" id="drop-zone">
+            <span class="drop-icon">📸</span>
+            <p>Arrastra imágenes aquí o haz clic para seleccionar</p>
+          </div>
+          <input type="file" id="file-input" accept="image/*" multiple style="display:none">
+          <div class="image-previews" id="image-previews"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="add-modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="add-modal-save">Guardar producto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PRODUCT MODAL -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Editar producto</h2>
+        <button class="modal-close" id="edit-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="edit-name">Nombre del producto</label>
+          <input type="text" id="edit-name">
+        </div>
+        <div class="form-group">
+          <label for="edit-category">Categoría</label>
+          <input type="text" id="edit-category">
+        </div>
+        <div class="form-group">
+          <label>Imágenes actuales</label>
+          <div class="edit-images" id="edit-images"></div>
+        </div>
+        <div class="form-group">
+          <label>Añadir más imágenes</label>
+          <div class="drop-zone" id="edit-drop-zone">
+            <span class="drop-icon">📸</span>
+            <p>Arrastra imágenes aquí o haz clic</p>
+          </div>
+          <input type="file" id="edit-file-input" accept="image/*" multiple style="display:none">
+          <div class="image-previews" id="edit-image-previews"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="edit-modal-cancel">Cancelar</button>
+        <button class="btn btn-primary" id="edit-modal-save">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRM -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal" style="max-width:380px">
+      <div class="modal-header">
+        <h2>Eliminar producto</h2>
+        <button class="modal-close" id="delete-modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--ink-muted);font-size:15px;">
+          ¿Estás seguro de eliminar <strong id="delete-product-name"></strong>?
+          Las imágenes se borrarán permanentemente.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="delete-modal-cancel">Cancelar</button>
+        <button class="btn btn-danger" id="delete-modal-confirm">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
