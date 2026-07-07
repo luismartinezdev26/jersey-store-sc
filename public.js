@@ -25,7 +25,6 @@ const lightboxClose = document.getElementById('lightbox-close');
 const lightboxWhatsapp = document.getElementById('lightbox-whatsapp');
 const lightboxThumbs = document.getElementById('lightbox-thumbs');
 const lightboxMeta = document.getElementById('lightbox-meta');
-const lightboxShare = document.getElementById('lightbox-share');
 
 /* ─── Init ─── */
 
@@ -269,22 +268,6 @@ if (searchInput) {
   searchInput.addEventListener('input', () => {
     searchQuery = searchInput.value;
     filterProducts();
-  });
-}
-
-/* ─── Share ─── */
-
-if (lightboxShare) {
-  lightboxShare.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (!lightboxProduct) return;
-    const url = `${window.location.origin}${window.location.pathname}?product=${lightboxProduct.id}`;
-    navigator.clipboard.writeText(url).then(() => {
-      lightboxShare.textContent = '✅ Copiado';
-      setTimeout(() => { lightboxShare.textContent = '🔗 Compartir'; }, 2000);
-    }).catch(() => {
-      lightboxShare.textContent = '❌ Error';
-    });
   });
 }
 
