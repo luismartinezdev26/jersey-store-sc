@@ -32,6 +32,8 @@ const addModalCancel = document.getElementById('add-modal-cancel');
 const addModalSave = document.getElementById('add-modal-save');
 const productName = document.getElementById('product-name');
 const productCategory = document.getElementById('product-category');
+const productSizes = document.getElementById('product-sizes');
+const productStock = document.getElementById('product-stock');
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 const imagePreviews = document.getElementById('image-previews');
@@ -43,6 +45,8 @@ const editModalCancel = document.getElementById('edit-modal-cancel');
 const editModalSave = document.getElementById('edit-modal-save');
 const editName = document.getElementById('edit-name');
 const editCategory = document.getElementById('edit-category');
+const editSizes = document.getElementById('edit-sizes');
+const editStock = document.getElementById('edit-stock');
 const editImages = document.getElementById('edit-images');
 const editDropZone = document.getElementById('edit-drop-zone');
 const editFileInput = document.getElementById('edit-file-input');
@@ -172,7 +176,9 @@ function createAdminCard(product, index) {
       <div class="admin-card-meta">
         📷 ${product.images ? product.images.length : 0}
         ${product.category ? `· ${escapeHtml(product.category)}` : ''}
+        ${product.in_stock === false ? '· 💤 Sin stock' : ''}
       </div>
+      ${product.sizes && product.sizes.length ? `<div class="admin-card-sizes">${product.sizes.map(s => `<span class="size-badge">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
     </div>
   `;
 
@@ -284,6 +290,8 @@ async function persistOrder() {
 function resetAddModal() {
   productName.value = '';
   productCategory.value = '';
+  productSizes.value = '';
+  productStock.checked = true;
   pendingFiles = [];
   imagePreviews.innerHTML = '';
 }
@@ -347,6 +355,10 @@ function handleFiles(files, mode) {
 addModalSave.addEventListener('click', async () => {
   const name = productName.value.trim();
   const category = productCategory.value.trim();
+  const sizes = productSizes.value.trim()
+    ? productSizes.value.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+  const inStock = productStock.checked;
 
   if (!name) {
     alert('Escribe un nombre para el producto');
@@ -367,6 +379,8 @@ addModalSave.addEventListener('click', async () => {
     const { error } = await SUPABASE.from('products').insert({
       name,
       category: category || null,
+      sizes,
+      in_stock: inStock,
       images: urls,
       sort_order: products.length,
     });
@@ -414,6 +428,8 @@ function openEditModal(product) {
   editingProductId = product.id;
   editName.value = product.name;
   editCategory.value = product.category || '';
+  editSizes.value = (product.sizes || []).join(', ');
+  editStock.checked = product.in_stock !== false;
   editPendingFiles = [];
   editRemovedImages = [];
   editImagePreviews.innerHTML = '';
@@ -467,6 +483,10 @@ editFileInput.addEventListener('change', () => {
 editModalSave.addEventListener('click', async () => {
   const name = editName.value.trim();
   const category = editCategory.value.trim();
+  const sizes = editSizes.value.trim()
+    ? editSizes.value.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
+  const inStock = editStock.checked;
 
   if (!name) {
     alert('Escribe un nombre para el producto');
@@ -493,6 +513,8 @@ editModalSave.addEventListener('click', async () => {
       .update({
         name,
         category: category || null,
+        sizes,
+        in_stock: inStock,
         images: allImages,
       })
       .eq('id', editingProductId);

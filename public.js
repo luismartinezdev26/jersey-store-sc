@@ -24,6 +24,8 @@ const lightboxNext = document.getElementById('lightbox-next');
 const lightboxClose = document.getElementById('lightbox-close');
 const lightboxWhatsapp = document.getElementById('lightbox-whatsapp');
 const lightboxThumbs = document.getElementById('lightbox-thumbs');
+const lightboxMeta = document.getElementById('lightbox-meta');
+const lightboxShare = document.getElementById('lightbox-share');
 
 /* ─── Init ─── */
 
@@ -52,15 +54,20 @@ function createProductCard(product) {
     ? product.images[0]
     : '';
 
+  const outOfStock = product.in_stock === false;
+  const sizes = product.sizes && product.sizes.length ? product.sizes : [];
+
   article.innerHTML = `
     <div class="card-image">
       <img src="${thumb}" alt="${escapeHtml(product.name)}" loading="lazy">
       <span class="photo-count">
         📷 ${product.images ? product.images.length : 0}
       </span>
+      ${outOfStock ? '<span class="stock-badge out">Sin stock</span>' : ''}
     </div>
     <div class="card-footer">
       <h3 class="card-title">${escapeHtml(product.name)}</h3>
+      ${sizes.length ? `<div class="card-sizes">${sizes.map(s => `<span class="size-badge">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
     </div>
   `;
 
@@ -144,6 +151,9 @@ function openLightbox(product) {
   updateLightbox();
   lightbox.classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  const url = `${window.location.pathname}?product=${product.id}`;
+  window.history.replaceState(null, '', url);
 }
 
 function updateLightbox() {
@@ -151,12 +161,33 @@ function updateLightbox() {
 
   const images = lightboxProduct.images;
   const current = images[lightboxIndex];
+  const outOfStock = lightboxProduct.in_stock === false;
+  const sizes = lightboxProduct.sizes && lightboxProduct.sizes.length ? lightboxProduct.sizes : [];
 
   lightboxImage.src = current;
   lightboxImage.alt = escapeHtml(lightboxProduct.name);
   lightboxTitle.textContent = lightboxProduct.name;
   lightboxCounter.textContent = `${lightboxIndex + 1} / ${images.length}`;
   lightboxWhatsapp.href = getWhatsappUrl(lightboxProduct.name);
+
+  lightboxMeta.innerHTML = '';
+  if (outOfStock) {
+    const badge = document.createElement('span');
+    badge.className = 'stock-badge in';
+    badge.textContent = '💤 Sin stock';
+    lightboxMeta.appendChild(badge);
+  }
+  if (sizes.length) {
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;';
+    sizes.forEach(s => {
+      const span = document.createElement('span');
+      span.className = 'size-badge';
+      span.textContent = s;
+      wrapper.appendChild(span);
+    });
+    lightboxMeta.appendChild(wrapper);
+  }
 
   renderThumbs(images);
 
@@ -190,6 +221,7 @@ function closeLightbox() {
   document.body.style.overflow = '';
   lightboxProduct = null;
   lightboxThumbs.innerHTML = '';
+  window.history.replaceState(null, '', window.location.pathname);
 }
 
 function lightboxPrevImage() {
@@ -240,6 +272,32 @@ if (searchInput) {
   });
 }
 
+/* ─── Share ─── */
+
+if (lightboxShare) {
+  lightboxShare.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!lightboxProduct) return;
+    const url = `${window.location.origin}${window.location.pathname}?product=${lightboxProduct.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      lightboxShare.textContent = '✅ Copiado';
+      setTimeout(() => { lightboxShare.textContent = '🔗 Compartir'; }, 2000);
+    }).catch(() => {
+      lightboxShare.textContent = '❌ Error';
+    });
+  });
+}
+
+/* ─── Open product from URL ─── */
+
+function openProductFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get('product');
+  if (!productId) return;
+  const match = products.find(p => p.id === productId);
+  if (match) openLightbox(match);
+}
+
 /* ─── Fetch products ─── */
 
 async function fetchProducts() {
@@ -259,6 +317,7 @@ async function fetchProducts() {
 
     renderFilters();
     filterProducts();
+    openProductFromUrl();
   } catch (err) {
     console.error('Error loading products:', err);
     grid.innerHTML = `
