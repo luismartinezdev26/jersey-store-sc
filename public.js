@@ -5,6 +5,7 @@
 let products = [];
 let categories = new Set();
 let activeCategory = 'all';
+let searchQuery = '';
 
 let lightboxIndex = 0;
 let lightboxProduct = null;
@@ -13,6 +14,7 @@ let lightboxProduct = null;
 
 const grid = document.getElementById('product-grid');
 const filters = document.getElementById('filters');
+const searchInput = document.getElementById('search-input');
 const lightbox = document.getElementById('lightbox');
 const lightboxTitle = document.getElementById('lightbox-title');
 const lightboxImage = document.getElementById('lightbox-image');
@@ -117,12 +119,18 @@ function renderFilters() {
 }
 
 function filterProducts() {
-  if (activeCategory === 'all') {
-    renderProducts(products);
-  } else {
-    const filtered = products.filter(p => p.category === activeCategory);
-    renderProducts(filtered);
+  let filtered = products;
+
+  if (activeCategory !== 'all') {
+    filtered = filtered.filter(p => p.category === activeCategory);
   }
+
+  if (searchQuery.trim()) {
+    const q = searchQuery.trim().toLowerCase();
+    filtered = filtered.filter(p => p.name.toLowerCase().includes(q));
+  }
+
+  renderProducts(filtered);
 }
 
 /* ─── Lightbox ─── */
@@ -197,6 +205,15 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') lightboxPrevImage();
   if (e.key === 'ArrowRight') lightboxNextImage();
 });
+
+/* ─── Search ─── */
+
+if (searchInput) {
+  searchInput.addEventListener('input', () => {
+    searchQuery = searchInput.value;
+    filterProducts();
+  });
+}
 
 /* ─── Fetch products ─── */
 
