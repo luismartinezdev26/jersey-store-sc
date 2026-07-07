@@ -60,7 +60,7 @@
   ¡Listo! Tu catálogo está configurado.
 */
 
-const SUPABASE_URL = 'https://ksjurgcuklxqatzrzjki.supabase.co';
+const SUPABASE_URL = 'https://ksjurgcuklxqatzzrjki.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzanVyZ2N1a2x4cWF0enpyamtpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NDk1NTUsImV4cCI6MjA5OTAyNTU1NX0.zwLL8kLYdVwHhLQA6TPB8f4FSOSzNGRYDYOjaY535ho';
 
 if (!SUPABASE_URL || SUPABASE_URL === 'https://tu-proyecto.supabase.co') {
