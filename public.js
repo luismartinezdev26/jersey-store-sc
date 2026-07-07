@@ -23,6 +23,7 @@ const lightboxPrev = document.getElementById('lightbox-prev');
 const lightboxNext = document.getElementById('lightbox-next');
 const lightboxClose = document.getElementById('lightbox-close');
 const lightboxWhatsapp = document.getElementById('lightbox-whatsapp');
+const lightboxThumbs = document.getElementById('lightbox-thumbs');
 
 /* ─── Init ─── */
 
@@ -157,14 +158,38 @@ function updateLightbox() {
   lightboxCounter.textContent = `${lightboxIndex + 1} / ${images.length}`;
   lightboxWhatsapp.href = getWhatsappUrl(lightboxProduct.name);
 
+  renderThumbs(images);
+
   lightboxPrev.style.display = images.length > 1 ? '' : 'none';
   lightboxNext.style.display = images.length > 1 ? '' : 'none';
+}
+
+function renderThumbs(images) {
+  lightboxThumbs.innerHTML = '';
+  images.forEach((url, i) => {
+    const thumb = document.createElement('button');
+    thumb.className = `lightbox-thumb${i === lightboxIndex ? ' active' : ''}`;
+    thumb.innerHTML = `<img src="${url}" alt="">`;
+    thumb.addEventListener('click', (e) => {
+      e.stopPropagation();
+      lightboxIndex = i;
+      updateLightbox();
+    });
+    lightboxThumbs.appendChild(thumb);
+  });
+
+  lightboxThumbs.children[lightboxIndex]?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest',
+    inline: 'center',
+  });
 }
 
 function closeLightbox() {
   lightbox.classList.remove('open');
   document.body.style.overflow = '';
   lightboxProduct = null;
+  lightboxThumbs.innerHTML = '';
 }
 
 function lightboxPrevImage() {
