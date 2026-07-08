@@ -928,6 +928,7 @@ main {
   overflow: hidden;
   transition: border-color 0.15s ease;
   position: relative;
+  cursor: pointer;
 }
 
 .admin-product-card:hover {
