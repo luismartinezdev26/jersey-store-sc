@@ -504,7 +504,6 @@ function openEditModal(product) {
   editStock.checked = product.in_stock !== false;
   editPendingFiles = [];
   editRemovedImages = [];
-  editImagePreviews.innerHTML = '';
 
   // Show existing images
   editImages.innerHTML = '';
