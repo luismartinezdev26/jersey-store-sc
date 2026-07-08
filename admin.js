@@ -285,6 +285,75 @@ async function persistOrder() {
   }
 }
 
+/* ─── Edit image drag & drop ─── */
+
+let dragEditSrcEl = null;
+
+function makeEditImageDraggable(el) {
+  el.draggable = true;
+  el.addEventListener('dragstart', handleEditImageDragStart);
+  el.addEventListener('dragend', handleEditImageDragEnd);
+  el.addEventListener('dragover', handleEditImageDragOver);
+  el.addEventListener('dragleave', handleEditImageDragLeave);
+  el.addEventListener('drop', handleEditImageDrop);
+}
+
+function handleEditImageDragStart(e) {
+  dragEditSrcEl = this;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', '');
+}
+
+function handleEditImageDragEnd() {
+  this.classList.remove('dragging');
+  editImages.querySelectorAll('.edit-image').forEach(el => el.classList.remove('drag-over-target'));
+  dragEditSrcEl = null;
+}
+
+function handleEditImageDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+
+  const items = [...editImages.querySelectorAll('.edit-image:not(.dragging)')];
+  items.forEach(el => el.classList.remove('drag-over-target'));
+
+  const target = this;
+  const rect = target.getBoundingClientRect();
+  const midY = rect.top + rect.height / 2;
+
+  if (e.clientY < midY) {
+    target.classList.add('drag-over-target');
+  } else {
+    const next = target.nextElementSibling;
+    if (next && next.classList.contains('edit-image')) {
+      next.classList.add('drag-over-target');
+    } else {
+      target.classList.add('drag-over-target');
+    }
+  }
+}
+
+function handleEditImageDragLeave() {
+  this.classList.remove('drag-over-target');
+}
+
+function handleEditImageDrop(e) {
+  e.preventDefault();
+  this.classList.remove('drag-over-target');
+
+  if (!dragEditSrcEl || dragEditSrcEl === this) return;
+
+  const rect = this.getBoundingClientRect();
+  const midY = rect.top + rect.height / 2;
+
+  if (e.clientY < midY) {
+    editImages.insertBefore(dragEditSrcEl, this);
+  } else {
+    editImages.insertBefore(dragEditSrcEl, this.nextElementSibling);
+  }
+}
+
 /* ─── Add product ─── */
 
 function resetAddModal() {
@@ -329,16 +398,18 @@ fileInput.addEventListener('change', () => {
 
 function handleFiles(files, mode) {
   const target = mode === 'add' ? pendingFiles : editPendingFiles;
-  const previews = mode === 'add' ? imagePreviews : editImagePreviews;
+  const previews = mode === 'add' ? imagePreviews : editImages;
+  const itemClass = mode === 'add' ? 'image-preview' : 'edit-image';
 
   for (const file of files) {
     target.push(file);
     const reader = new FileReader();
     const preview = document.createElement('div');
-    preview.className = 'image-preview';
+    preview.className = itemClass;
     reader.onload = (e) => {
       preview.innerHTML = `
         <img src="${e.target.result}" alt="">
+        ${mode === 'edit' ? '<div class="drag-handle">⠿</div>' : ''}
         <button class="remove-img">✕</button>
       `;
       preview.querySelector('.remove-img').addEventListener('click', () => {
@@ -346,6 +417,7 @@ function handleFiles(files, mode) {
         if (idx > -1) target.splice(idx, 1);
         preview.remove();
       });
+      if (mode === 'edit') makeEditImageDraggable(preview);
     };
     reader.readAsDataURL(file);
     previews.appendChild(preview);
@@ -437,11 +509,12 @@ function openEditModal(product) {
   // Show existing images
   editImages.innerHTML = '';
   if (product.images) {
-    product.images.forEach((url, i) => {
+    product.images.forEach((url) => {
       const div = document.createElement('div');
       div.className = 'edit-image';
       div.innerHTML = `
         <img src="${url}" alt="">
+        <div class="drag-handle" title="Arrastrar para reordenar">⠿</div>
         <button class="remove-img" data-url="${url}">✕</button>
       `;
       div.querySelector('.remove-img').addEventListener('click', () => {
@@ -449,6 +522,7 @@ function openEditModal(product) {
         div.remove();
       });
       editImages.appendChild(div);
+      makeEditImageDraggable(div);
     });
   }
 
@@ -500,13 +574,19 @@ editModalSave.addEventListener('click', async () => {
     // Upload new images
     const newUrls = await uploadFiles(editPendingFiles);
 
-    // Get current images (minus removed ones)
-    const product = products.find(p => p.id === editingProductId);
-    let currentImages = product.images || [];
-    currentImages = currentImages.filter(url => !editRemovedImages.includes(url));
-
-    // Combine: keep current + new uploads
-    const allImages = [...currentImages, ...newUrls];
+    // Read images in DOM order (existing URLs + newly uploaded)
+    const allImages = [];
+    let newFileIdx = 0;
+    const children = editImages.querySelectorAll('.edit-image');
+    for (const child of children) {
+      const src = child.querySelector('img').src;
+      if (src.startsWith('blob:')) {
+        allImages.push(newUrls[newFileIdx]);
+        newFileIdx++;
+      } else {
+        allImages.push(src);
+      }
+    }
 
     const { error } = await SUPABASE
       .from('products')
