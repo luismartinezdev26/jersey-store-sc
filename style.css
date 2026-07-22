@@ -482,19 +482,20 @@ main {
 }
 
 .lightbox-meta {
+  padding: var(--space-2) var(--space-5) var(--space-1);
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: 0 var(--space-5) var(--space-3);
   flex-wrap: wrap;
+  min-height: 28px;
 }
 
 .lightbox-description {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink);
-  padding: 0;
-  line-height: 1.4;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  color: var(--ink-muted);
+  font-style: italic;
+  letter-spacing: 0.01em;
 }
 
 .lightbox-actions {
@@ -609,14 +610,21 @@ main {
   background: var(--surface-elevated);
   border: 1px solid var(--border);
   color: var(--ink);
-  font-size: 18px;
   z-index: 2;
   transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(44, 36, 22, 0.1);
 }
 
 .lightbox-nav-btn:hover {
   border-color: var(--border-hover);
   background: var(--parchment-light);
+  box-shadow: 0 4px 12px rgba(44, 36, 22, 0.15);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.lightbox-nav-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 .lightbox-nav-btn.prev {
@@ -691,7 +699,11 @@ main {
   .lightbox-nav-btn {
     width: 36px;
     height: 36px;
-    font-size: 16px;
+  }
+
+  .lightbox-nav-btn svg {
+    width: 16px;
+    height: 16px;
   }
 
   .lightbox-nav-btn.prev {
@@ -718,7 +730,11 @@ main {
   }
 
   .lightbox-meta {
-    padding: 0 var(--space-4) var(--space-2);
+    padding: var(--space-2) var(--space-4) var(--space-1);
+  }
+
+  .lightbox-description {
+    font-size: 13px;
   }
 }
 
