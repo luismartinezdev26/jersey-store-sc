@@ -406,13 +406,6 @@ main {
   background: rgba(74, 124, 89, 0.85);
 }
 
-.card-sizes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-  margin-top: 6px;
-}
-
 .card-footer {
   padding: var(--space-3) var(--space-4) var(--space-4);
 }
@@ -496,9 +489,12 @@ main {
   flex-wrap: wrap;
 }
 
-.lightbox-meta .size-badge {
-  font-size: 11px;
-  padding: 2px 8px;
+.lightbox-description {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  padding: 0;
+  line-height: 1.4;
 }
 
 .lightbox-actions {
@@ -548,34 +544,6 @@ main {
   max-height: 60vh;
   object-fit: contain;
   border-radius: var(--radius-sm);
-}
-
-.lightbox-caption {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(transparent, rgba(44, 36, 22, 0.85));
-  color: white;
-  font-size: 14px;
-  font-weight: 450;
-  text-align: center;
-  padding: 40px var(--space-4) var(--space-3);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-}
-
-.lightbox-image-wrapper:hover .lightbox-caption,
-.lightbox-caption.visible {
-  opacity: 1;
-}
-
-@media (max-width: 640px) {
-  .lightbox-caption {
-    font-size: 12px;
-    padding: 32px var(--space-3) var(--space-2);
-  }
 }
 
 .lightbox-thumbs {
@@ -1043,25 +1011,6 @@ main {
   font-size: 12px;
   color: var(--ink-muted);
   margin-top: 2px;
-}
-
-.admin-card-sizes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-  margin-top: 6px;
-}
-
-.size-badge {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 500;
-  padding: 1px 6px;
-  border-radius: 3px;
-  background: var(--parchment-dark);
-  color: var(--ink-muted);
-  border: 1px solid var(--border);
-  line-height: 1.5;
 }
 
 /* ═══════════════════════════════════════════

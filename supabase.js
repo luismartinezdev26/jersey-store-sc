@@ -15,12 +15,11 @@
      - Ve a SQL Editor
      - Pega y ejecuta esto:
 
-     CREATE TABLE products (
+      CREATE TABLE products (
        id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
        name text NOT NULL,
        images jsonb[] NOT NULL DEFAULT '{}',
        category text DEFAULT '',
-       sizes text[] DEFAULT '{}',
        in_stock boolean DEFAULT true,
        sort_order integer DEFAULT 0,
        created_at timestamptz DEFAULT now()

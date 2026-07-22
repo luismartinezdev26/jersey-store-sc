@@ -25,7 +25,6 @@ const lightboxClose = document.getElementById('lightbox-close');
 const lightboxWhatsapp = document.getElementById('lightbox-whatsapp');
 const lightboxThumbs = document.getElementById('lightbox-thumbs');
 const lightboxMeta = document.getElementById('lightbox-meta');
-const lightboxCaption = document.getElementById('lightbox-caption');
 
 /* ─── Init ─── */
 
@@ -55,7 +54,6 @@ function createProductCard(product) {
     : '';
 
   const outOfStock = product.in_stock === false;
-  const sizes = product.sizes && product.sizes.length ? product.sizes : [];
 
   article.innerHTML = `
     <div class="card-image">
@@ -67,7 +65,6 @@ function createProductCard(product) {
     </div>
     <div class="card-footer">
       <h3 class="card-title">${escapeHtml(product.name)}</h3>
-      ${sizes.length ? `<div class="card-sizes">${sizes.map(s => `<span class="size-badge">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
     </div>
   `;
 
@@ -164,39 +161,25 @@ function updateLightbox() {
   const currentUrl = typeof current === 'string' ? current : current.url;
   const currentDesc = typeof current === 'string' ? '' : (current.description || '');
   const outOfStock = lightboxProduct.in_stock === false;
-  const sizes = lightboxProduct.sizes && lightboxProduct.sizes.length ? lightboxProduct.sizes : [];
 
   lightboxImage.src = currentUrl;
   lightboxImage.alt = currentDesc || escapeHtml(lightboxProduct.name);
   lightboxTitle.textContent = lightboxProduct.name;
-
-  if (currentDesc) {
-    lightboxCaption.textContent = currentDesc;
-    lightboxCaption.classList.add('visible');
-  } else {
-    lightboxCaption.textContent = '';
-    lightboxCaption.classList.remove('visible');
-  }
   lightboxCounter.textContent = `${lightboxIndex + 1} / ${images.length}`;
   lightboxWhatsapp.href = getWhatsappUrl(lightboxProduct.name);
 
   lightboxMeta.innerHTML = '';
+  if (currentDesc) {
+    const descEl = document.createElement('span');
+    descEl.className = 'lightbox-description';
+    descEl.textContent = currentDesc;
+    lightboxMeta.appendChild(descEl);
+  }
   if (outOfStock) {
     const badge = document.createElement('span');
     badge.className = 'stock-badge in';
     badge.textContent = '💤 Sin stock';
     lightboxMeta.appendChild(badge);
-  }
-  if (sizes.length) {
-    const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;';
-    sizes.forEach(s => {
-      const span = document.createElement('span');
-      span.className = 'size-badge';
-      span.textContent = s;
-      wrapper.appendChild(span);
-    });
-    lightboxMeta.appendChild(wrapper);
   }
 
   renderThumbs(images);
@@ -233,8 +216,6 @@ function closeLightbox() {
   document.body.style.overflow = '';
   lightboxProduct = null;
   lightboxThumbs.innerHTML = '';
-  lightboxCaption.textContent = '';
-  lightboxCaption.classList.remove('visible');
   window.history.replaceState(null, '', window.location.pathname);
 }
 

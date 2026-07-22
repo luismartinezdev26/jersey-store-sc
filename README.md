@@ -27,17 +27,17 @@ Catálogo web estático para mostrar y vender camisetas deportivas. Construido c
 ## Funcionalidades
 
 ### Público
-- Grid de productos con imágenes, nombres, tallas y stock
+- Grid de productos con imágenes, nombres y stock
 - Búsqueda por nombre
 - Filtros por categoría
 - Lightbox con navegación entre imágenes
-- Descripción superpuesta en cada imagen del lightbox
+- Descripción visible de la imagen actual en el lightbox
 - Botón flotante y enlace a WhatsApp para consultas
 
 ### Admin
 - Login con email/contraseña (Supabase Auth)
 - Añadir productos con imágenes y descripciones por imagen
-- Editar productos (nombre, categoría, tallas, stock, imágenes)
+- Editar productos (nombre, categoría, stock, imágenes)
 - Reordenar imágenes por drag & drop
 - Reordenar productos por drag & drop
 - Eliminar productos (con borrado de imágenes del storage)
@@ -60,7 +60,6 @@ CREATE TABLE products (
   name text NOT NULL,
   images jsonb[] NOT NULL DEFAULT '{}',
   category text DEFAULT '',
-  sizes text[] DEFAULT '{}',
   in_stock boolean DEFAULT true,
   sort_order integer DEFAULT 0,
   created_at timestamptz DEFAULT now()
