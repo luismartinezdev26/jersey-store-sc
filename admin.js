@@ -162,7 +162,7 @@ function createAdminCard(product, index) {
   card.draggable = true;
 
   const thumb = product.images && product.images.length > 0
-    ? product.images[0]
+    ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url)
     : '';
 
   card.innerHTML = `
@@ -410,6 +410,7 @@ function handleFiles(files, mode) {
       preview.innerHTML = `
         <img src="${e.target.result}" alt="">
         ${mode === 'edit' ? '<div class="drag-handle">⠿</div>' : ''}
+        <input type="text" class="img-desc" placeholder="Descripción (ej: 2002/03 Local)">
         <button class="remove-img">✕</button>
       `;
       preview.querySelector('.remove-img').addEventListener('click', () => {
@@ -448,12 +449,19 @@ addModalSave.addEventListener('click', async () => {
   try {
     const urls = await uploadFiles(pendingFiles);
 
+    const previewEls = imagePreviews.querySelectorAll('.image-preview');
+    const imagesData = [];
+    previewEls.forEach((el, i) => {
+      const desc = el.querySelector('.img-desc').value.trim();
+      imagesData.push({ url: urls[i], description: desc });
+    });
+
     const { error } = await SUPABASE.from('products').insert({
       name,
       category: category || null,
       sizes,
       in_stock: inStock,
-      images: urls,
+      images: imagesData,
       sort_order: products.length,
     });
 
@@ -508,16 +516,19 @@ function openEditModal(product) {
   // Show existing images
   editImages.innerHTML = '';
   if (product.images) {
-    product.images.forEach((url) => {
+    product.images.forEach((img) => {
+      const imgUrl = typeof img === 'string' ? img : img.url;
+      const imgDesc = typeof img === 'string' ? '' : (img.description || '');
       const div = document.createElement('div');
       div.className = 'edit-image';
       div.innerHTML = `
-        <img src="${url}" alt="">
+        <img src="${imgUrl}" alt="">
         <div class="drag-handle" title="Arrastrar para reordenar">⠿</div>
-        <button class="remove-img" data-url="${url}">✕</button>
+        <input type="text" class="img-desc" placeholder="Descripción (ej: 2002/03 Local)" value="${escapeHtml(imgDesc)}">
+        <button class="remove-img" data-url="${imgUrl}">✕</button>
       `;
       div.querySelector('.remove-img').addEventListener('click', () => {
-        editRemovedImages.push(url);
+        editRemovedImages.push(imgUrl);
         div.remove();
       });
       editImages.appendChild(div);
@@ -579,11 +590,12 @@ editModalSave.addEventListener('click', async () => {
     const children = editImages.querySelectorAll('.edit-image');
     for (const child of children) {
       const src = child.querySelector('img').src;
+      const desc = child.querySelector('.img-desc').value.trim();
       if (src.startsWith('blob:')) {
-        allImages.push(newUrls[newFileIdx]);
+        allImages.push({ url: newUrls[newFileIdx], description: desc });
         newFileIdx++;
       } else {
-        allImages.push(src);
+        allImages.push({ url: src, description: desc });
       }
     }
 

@@ -25,6 +25,7 @@ const lightboxClose = document.getElementById('lightbox-close');
 const lightboxWhatsapp = document.getElementById('lightbox-whatsapp');
 const lightboxThumbs = document.getElementById('lightbox-thumbs');
 const lightboxMeta = document.getElementById('lightbox-meta');
+const lightboxCaption = document.getElementById('lightbox-caption');
 
 /* ─── Init ─── */
 
@@ -50,7 +51,7 @@ function createProductCard(product) {
   article.dataset.id = product.id;
 
   const thumb = product.images && product.images.length > 0
-    ? product.images[0]
+    ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url)
     : '';
 
   const outOfStock = product.in_stock === false;
@@ -160,12 +161,22 @@ function updateLightbox() {
 
   const images = lightboxProduct.images;
   const current = images[lightboxIndex];
+  const currentUrl = typeof current === 'string' ? current : current.url;
+  const currentDesc = typeof current === 'string' ? '' : (current.description || '');
   const outOfStock = lightboxProduct.in_stock === false;
   const sizes = lightboxProduct.sizes && lightboxProduct.sizes.length ? lightboxProduct.sizes : [];
 
-  lightboxImage.src = current;
-  lightboxImage.alt = escapeHtml(lightboxProduct.name);
+  lightboxImage.src = currentUrl;
+  lightboxImage.alt = currentDesc || escapeHtml(lightboxProduct.name);
   lightboxTitle.textContent = lightboxProduct.name;
+
+  if (currentDesc) {
+    lightboxCaption.textContent = currentDesc;
+    lightboxCaption.classList.add('visible');
+  } else {
+    lightboxCaption.textContent = '';
+    lightboxCaption.classList.remove('visible');
+  }
   lightboxCounter.textContent = `${lightboxIndex + 1} / ${images.length}`;
   lightboxWhatsapp.href = getWhatsappUrl(lightboxProduct.name);
 
@@ -196,10 +207,12 @@ function updateLightbox() {
 
 function renderThumbs(images) {
   lightboxThumbs.innerHTML = '';
-  images.forEach((url, i) => {
+  images.forEach((img, i) => {
+    const thumbUrl = typeof img === 'string' ? img : img.url;
+    const thumbDesc = typeof img === 'string' ? '' : (img.description || '');
     const thumb = document.createElement('button');
     thumb.className = `lightbox-thumb${i === lightboxIndex ? ' active' : ''}`;
-    thumb.innerHTML = `<img src="${url}" alt="">`;
+    thumb.innerHTML = `<img src="${thumbUrl}" alt="${escapeHtml(thumbDesc)}">`;
     thumb.addEventListener('click', (e) => {
       e.stopPropagation();
       lightboxIndex = i;
@@ -220,6 +233,8 @@ function closeLightbox() {
   document.body.style.overflow = '';
   lightboxProduct = null;
   lightboxThumbs.innerHTML = '';
+  lightboxCaption.textContent = '';
+  lightboxCaption.classList.remove('visible');
   window.history.replaceState(null, '', window.location.pathname);
 }
 
@@ -293,7 +308,12 @@ async function fetchProducts() {
 
     if (error) throw error;
 
-    products = data || [];
+    products = (data || []).map(p => ({
+      ...p,
+      images: (p.images || []).map(img =>
+        typeof img === 'string' ? { url: img, description: '' } : img
+      ),
+    }));
     products.forEach(p => {
       if (p.category) categories.add(p.category);
     });

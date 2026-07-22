@@ -18,8 +18,10 @@
      CREATE TABLE products (
        id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
        name text NOT NULL,
-       images text[] NOT NULL DEFAULT '{}',
+       images jsonb[] NOT NULL DEFAULT '{}',
        category text DEFAULT '',
+       sizes text[] DEFAULT '{}',
+       in_stock boolean DEFAULT true,
        sort_order integer DEFAULT 0,
        created_at timestamptz DEFAULT now()
      );
@@ -32,12 +34,26 @@
      CREATE POLICY "Admin write access" ON products
        FOR ALL USING (auth.role() = 'authenticated');
 
-  7. Crea un bucket de storage:
+  7.  Si ya tienes datos con images como text[], migra así:
+      - Ve a SQL Editor y ejecuta:
+
+      ALTER TABLE products ADD COLUMN images_new jsonb[] DEFAULT '{}';
+
+      UPDATE products SET images_new = (
+        SELECT array_agg(jsonb_build_object('url', u, 'description', ''))
+        FROM unnest(images) AS u
+      );
+
+      ALTER TABLE products DROP COLUMN images;
+
+      ALTER TABLE products RENAME COLUMN images_new TO images;
+
+  8.  Crea un bucket de storage:
      - Ve a Storage → Create a new bucket
      - Nombre: product-images
      - Marcar "Public bucket"
 
-  8. Políticas de seguridad para storage:
+  9.  Políticas de seguridad para storage:
      - Ve a SQL Editor y ejecuta esto:
 
      CREATE POLICY "Public read storage" ON storage.objects
@@ -45,17 +61,17 @@
 
      CREATE POLICY "Admin upload storage" ON storage.objects
        FOR INSERT WITH CHECK (
-         bucket_id = 'product-images' AND auth.role() = 'authenticated'
-       );
+       bucket_id = 'product-images' AND auth.role() = 'authenticated'
+     );
 
      CREATE POLICY "Admin delete storage" ON storage.objects
        FOR DELETE USING (
          bucket_id = 'product-images' AND auth.role() = 'authenticated'
        );
 
-  9. Crea un usuario admin:
-     - Ve a Authentication → Users → Add User
-     - Pon tu email y una contraseña
+  10. Crea un usuario admin:
+      - Ve a Authentication → Users → Add User
+      - Pon tu email y una contraseña
 
   ¡Listo! Tu catálogo está configurado.
 */
