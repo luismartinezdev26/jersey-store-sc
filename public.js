@@ -53,15 +53,12 @@ function createProductCard(product) {
     ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url)
     : '';
 
-  const outOfStock = product.in_stock === false;
-
   article.innerHTML = `
     <div class="card-image">
       <img src="${thumb}" alt="${escapeHtml(product.name)}" loading="lazy">
       <span class="photo-count">
         📷 ${product.images ? product.images.length : 0}
       </span>
-      ${outOfStock ? '<span class="stock-badge out">Sin stock</span>' : ''}
     </div>
     <div class="card-footer">
       <h3 class="card-title">${escapeHtml(product.name)}</h3>
@@ -160,7 +157,6 @@ function updateLightbox() {
   const current = images[lightboxIndex];
   const currentUrl = typeof current === 'string' ? current : current.url;
   const currentDesc = typeof current === 'string' ? '' : (current.description || '');
-  const outOfStock = lightboxProduct.in_stock === false;
 
   lightboxImage.src = currentUrl;
   lightboxImage.alt = currentDesc || escapeHtml(lightboxProduct.name);
@@ -174,12 +170,6 @@ function updateLightbox() {
     descEl.className = 'lightbox-description';
     descEl.textContent = currentDesc;
     lightboxMeta.appendChild(descEl);
-  }
-  if (outOfStock) {
-    const badge = document.createElement('span');
-    badge.className = 'stock-badge in';
-    badge.textContent = '💤 Sin stock';
-    lightboxMeta.appendChild(badge);
   }
 
   renderThumbs(images);
@@ -257,6 +247,31 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') lightboxPrevImage();
   if (e.key === 'ArrowRight') lightboxNextImage();
 });
+
+/* ─── Touch swipe ─── */
+
+let touchStartX = 0;
+let touchStartY = 0;
+
+lightbox.addEventListener('touchstart', (e) => {
+  if (e.target.closest('.lightbox-thumbs') || e.target.closest('.lightbox-nav-btn')) return;
+  touchStartX = e.changedTouches[0].screenX;
+  touchStartY = e.changedTouches[0].screenY;
+}, { passive: true });
+
+lightbox.addEventListener('touchend', (e) => {
+  if (!touchStartX) return;
+  if (e.target.closest('.lightbox-thumbs') || e.target.closest('.lightbox-nav-btn')) return;
+
+  const deltaX = e.changedTouches[0].screenX - touchStartX;
+  const deltaY = e.changedTouches[0].screenY - touchStartY;
+  touchStartX = 0;
+
+  if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+
+  if (deltaX > 0) lightboxPrevImage();
+  else lightboxNextImage();
+}, { passive: true });
 
 /* ─── Search ─── */
 

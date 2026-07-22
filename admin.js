@@ -32,7 +32,6 @@ const addModalCancel = document.getElementById('add-modal-cancel');
 const addModalSave = document.getElementById('add-modal-save');
 const productName = document.getElementById('product-name');
 const productCategory = document.getElementById('product-category');
-const productStock = document.getElementById('product-stock');
 const dropZone = document.getElementById('drop-zone');
 const fileInput = document.getElementById('file-input');
 const imagePreviews = document.getElementById('image-previews');
@@ -44,7 +43,6 @@ const editModalCancel = document.getElementById('edit-modal-cancel');
 const editModalSave = document.getElementById('edit-modal-save');
 const editName = document.getElementById('edit-name');
 const editCategory = document.getElementById('edit-category');
-const editStock = document.getElementById('edit-stock');
 const editImages = document.getElementById('edit-images');
 const editDropZone = document.getElementById('edit-drop-zone');
 const editFileInput = document.getElementById('edit-file-input');
@@ -174,7 +172,6 @@ function createAdminCard(product, index) {
       <div class="admin-card-meta">
         📷 ${product.images ? product.images.length : 0}
         ${product.category ? `· ${escapeHtml(product.category)}` : ''}
-        ${product.in_stock === false ? '· 💤 Sin stock' : ''}
       </div>
     </div>
   `;
@@ -356,7 +353,6 @@ function handleEditImageDrop(e) {
 function resetAddModal() {
   productName.value = '';
   productCategory.value = '';
-  productStock.checked = true;
   pendingFiles = [];
   imagePreviews.innerHTML = '';
 }
@@ -424,7 +420,6 @@ function handleFiles(files, mode) {
 addModalSave.addEventListener('click', async () => {
   const name = productName.value.trim();
   const category = productCategory.value.trim();
-  const inStock = productStock.checked;
 
   if (!name) {
     alert('Escribe un nombre para el producto');
@@ -452,7 +447,6 @@ addModalSave.addEventListener('click', async () => {
     const { error } = await SUPABASE.from('products').insert({
       name,
       category: category || null,
-      in_stock: inStock,
       images: imagesData,
       sort_order: products.length,
     });
@@ -500,7 +494,6 @@ function openEditModal(product) {
   editingProductId = product.id;
   editName.value = product.name;
   editCategory.value = product.category || '';
-  editStock.checked = product.in_stock !== false;
   editPendingFiles = [];
   editRemovedImages = [];
 
@@ -558,7 +551,6 @@ editFileInput.addEventListener('change', () => {
 editModalSave.addEventListener('click', async () => {
   const name = editName.value.trim();
   const category = editCategory.value.trim();
-  const inStock = editStock.checked;
 
   if (!name) {
     alert('Escribe un nombre para el producto');
@@ -592,7 +584,6 @@ editModalSave.addEventListener('click', async () => {
       .update({
         name,
         category: category || null,
-        in_stock: inStock,
         images: allImages,
       })
       .eq('id', editingProductId);

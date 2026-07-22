@@ -20,7 +20,6 @@
        name text NOT NULL,
        images jsonb[] NOT NULL DEFAULT '{}',
        category text DEFAULT '',
-       in_stock boolean DEFAULT true,
        sort_order integer DEFAULT 0,
        created_at timestamptz DEFAULT now()
      );
